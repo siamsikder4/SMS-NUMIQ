@@ -7,6 +7,7 @@ import os
 import re
 import html
 import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
 import firebase_admin
 from firebase_admin import credentials, firestore
 
@@ -381,7 +382,7 @@ GLOBAL_BODY_EMOJIS = {
     "📂": "5257969839313526622", "🌍": "5780471598922337683", "📌": "5318986077455795572",
     "📢": "5789428375261023681", "🆔": "5226929552319594190", "📈": "5352877703043258544",
     "🔔": "5352980533150259581", "🏦": "5429612421977253466", "🧾": "5192739271886282680",
-    "👨‍⚖️️": "5334763399299506604", "🔍": "5463352748751753567", "🔑": "5197288647275071607",
+    "👨‍⚖": "5334763399299506604", "🔍": "5463352748751753567", "🔑": "5197288647275071607",
     "🏆": "5240021484516185513", "🚦": "5429571662737611814", "👥": "5420145051336485498", 
     "🎯": "5352922460897452503", "📶": "5429353834881261942", "⏳": "5337172996211648018", 
     "🔸": "5429576112323732785", "🎉": "5420396762189831222", "💵": "5429612421977253466", 
@@ -2208,10 +2209,31 @@ def handle_callback(callback_query):
         answer_callback_query(query_id, f"{data} clicked!", show_alert=True)
 
 # ==========================================
+# Render Dummy Web Server (To satisfy port binding)
+# ==========================================
+class DummyHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header("Content-type", "text/html")
+        self.end_headers()
+        self.wfile.write(b"SMS NUMIQ Bot is Running Successfully!")
+
+    def log_message(self, format, *args):
+        pass # Hide HTTP logs to keep console clean
+
+def run_dummy_server():
+    port = int(os.environ.get("PORT", 10000))
+    server = HTTPServer(("0.0.0.0", port), DummyHandler)
+    server.serve_forever()
+
+# ==========================================
 # Main
 # ==========================================
 def main():
     global BOT_USERNAME
+    
+    # 🌟 Render-এর জন্য ব্যাকগ্রাউন্ডে ডামি সার্ভার চালু করা হলো
+    threading.Thread(target=run_dummy_server, daemon=True).start()
     
     load_local_data()
     init_sqlite()
