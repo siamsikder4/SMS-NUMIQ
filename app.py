@@ -50,13 +50,8 @@ recent_traffic = []
 daily_stats = {"date": "", "numbers": 0, "otps": 0}
 daily_user_otps = {"date": "", "users": {}}
 
-# Caching Variables
-cached_services_kb = None
-cached_countries_kb = {}
-cached_leaderboard_text = ""
-
 # ==========================================
-# Animated & Custom Emojis Map
+# Custom Animated Emojis Mapping
 # ==========================================
 GLOBAL_BODY_EMOJIS = {
     "📞": "5429167978761461870", "📡": "5429571662737611814", "🔐": "5337255927735163754",
@@ -66,8 +61,7 @@ GLOBAL_BODY_EMOJIS = {
     "💳": "5190899075968441286", "💵": "5429612421977253466", "🎁": "5420396762189831222",
     "🔗": "5420517437885943844", "🔔": "5352980533150259581", "👑": "5352838545826420397",
     "🆔": "5226929552319594190", "💰": "5429105001655999635", "✅": "5352694861990501856",
-    "❌": "5420130255174145507", "⚙️": "5420155432272438703", "🤝": "5192805934073685937",
-    "1️⃣": "5352651766288652742", "2️⃣": "5355186458418257716", "3️⃣": "5352867219028091093"
+    "❌": "5420130255174145507", "⚙️": "5420155432272438703", "🤝": "5192805934073685937"
 }
 
 def apply_emojis(text):
@@ -82,14 +76,12 @@ def apply_emojis(text):
         text = text.replace(f"__TG_EMOJI_{i}__", h)
     return text
 
-# Admin Settings
+# Bot Settings
 bot_settings = {
     "withdraw_on": True,
     "min_withdraw": 10.0,
     "support_link": "https://t.me/Zvshshhvc",
     "w_group": "",
-    "auto_br_on": False,
-    "auto_br_interval": 60,
     "cooldown": 5,
     "num_req": 1,
     "w_methods": ["bKash", "Nagad"],
@@ -105,20 +97,8 @@ USERS_LIST_FILE = "users_list.json"
 def get_api_key():
     return random.choice(voltx_keys) if voltx_keys else API_2OO9_KEY_DEFAULT
 
-def get_otp_reward(service_name):
-    rates = bot_settings.get("otp_service_rates", {})
-    val = rates.get(service_name, bot_settings.get("otp_default_rate", 0.5))
-    return float(val)
-
-def update_daily_stat(key, amount=1):
-    global daily_stats
-    today = time.strftime("%Y-%m-%d")
-    if daily_stats.get("date") != today:
-        daily_stats = {"date": today, "numbers": 0, "otps": 0}
-    daily_stats[key] = daily_stats.get(key, 0) + amount
-
 # ==========================================
-# Local Storage
+# Local Storage Managers
 # ==========================================
 def load_local_data():
     global recent_traffic, voltx_dynamic_data, voltx_keys, force_join_status, force_join_channels, voltx_auto_mode, otp_forward_groups, otp_button_link, recent_success_otps, bot_settings, user_active_sessions, daily_stats, daily_user_otps
@@ -191,6 +171,9 @@ def get_all_user_ids():
         except: pass
     return list(users)
 
+# ==========================================
+# Telegram API Call Helpers
+# ==========================================
 def get_bot_info():
     try:
         res = requests.get(BASE_URL + "getMe").json()
@@ -224,7 +207,7 @@ def delete_message(chat_id, message_id):
     requests.post(BASE_URL + "deleteMessage", json=payload)
 
 # ==========================================
-# Database Handlers
+# Database Handlers (SQLite)
 # ==========================================
 def init_sqlite():
     conn = sqlite3.connect("bot_database.db")
@@ -276,10 +259,10 @@ def update_user_stats(user_id, balance_add=0.0, invite_add=0, otps_add=0):
     conn.close()
 
 # ==========================================
-# Keyboards & Custom Layouts (Image Matches)
+# Custom UI Layouts (Screen Matched)
 # ==========================================
 def get_main_keyboard(user_id):
-    # হুবহু স্ক্রিনশট ১ এর মতো ৬টি বাটন[span_4](start_span)[span_4](end_span)
+    # স্ক্রিনশট ১ এর অনুকরণে ৬টি প্রধান মেনু বাটন[span_8](start_span)[span_8](end_span)
     keyboard_layout = [
         [
             {"text": "Get Number", "icon_custom_emoji_id": "5429167978761461870"},
@@ -299,7 +282,7 @@ def get_main_keyboard(user_id):
     return {"keyboard": keyboard_layout, "resize_keyboard": True}
 
 def get_live_traffic_content():
-    # হুবহু স্ক্রিনশট ২ এর ডিজাইন[span_5](start_span)[span_5](end_span)
+    # স্ক্রিনশট ২ এর ডিজাইন[span_9](start_span)[span_9](end_span)
     total_hits = len(recent_traffic)
     top_country = "Cameroon" if total_hits > 0 else "None"
     
@@ -320,7 +303,7 @@ def get_live_traffic_content():
     return msg, markup
 
 def get_profile_content(user_id):
-    # হুবহু স্ক্রিনশট ৩ এর প্রোফাইল লেআউট[span_6](start_span)[span_6](end_span)
+    # স্ক্রিনশট ৩ এর প্রোফাইল লেআউট[span_10](start_span)[span_10](end_span)
     u = get_user(user_id)
     bal_bdt = u.get("balance", 0.0) if u else 0.0
     bal_usdt = round(bal_bdt / 125.0, 4) if bal_bdt > 0 else 0.0
@@ -356,7 +339,7 @@ def get_profile_content(user_id):
     return msg, markup
 
 # ==========================================
-# Voltx Listeners
+# Voltx Listener
 # ==========================================
 def voltx_traffic_poller():
     global recent_traffic
@@ -373,7 +356,7 @@ def voltx_traffic_poller():
         time.sleep(15)
 
 # ==========================================
-# Message & Callback Handlers
+# Bot Message & Event Routing
 # ==========================================
 def handle_message(message):
     if message.get("chat", {}).get("type") != "private": return
@@ -393,11 +376,11 @@ def handle_message(message):
         msg, markup = get_profile_content(user_id)
         send_message(chat_id, msg, reply_markup=markup)
     elif text == "Get Number":
-        send_message(chat_id, "📞 <b>Fetching active services...</b>\nChoose your service:", reply_markup=get_main_keyboard(user_id))
+        send_message(chat_id, "📞 <b>Service Selection:</b>\nActive numbers ready to receive SMS.", reply_markup=get_main_keyboard(user_id))
     elif text == "2F Auth":
-        send_message(chat_id, "🔐 <b>2-Factor Authentication Hub</b>\nFeature is fully synced and active.", reply_markup=get_main_keyboard(user_id))
+        send_message(chat_id, "🔐 <b>2-Factor Authentication Hub</b>\nActive and synced.", reply_markup=get_main_keyboard(user_id))
     elif text == "Leaderboard":
-        send_message(chat_id, "🏆 <b>Leaderboard</b>\nCheck the top earners and OTP receivers today!", reply_markup=get_main_keyboard(user_id))
+        send_message(chat_id, "🏆 <b>Today's Leaderboard:</b>\nTop receivers list loaded.", reply_markup=get_main_keyboard(user_id))
     elif text == "Support":
         send_message(chat_id, f"💬 <b>Support & Channel:</b>\nJoin: {bot_settings['main_channel_link']}", reply_markup=get_main_keyboard(user_id))
 
@@ -411,14 +394,14 @@ def handle_callback(callback_query):
     if data == "refresh_traffic":
         msg, markup = get_live_traffic_content()
         edit_message(chat_id, message_id, msg, reply_markup=markup)
-        answer_callback_query(query_id, "Live Traffic Refreshed!")
+        answer_callback_query(query_id, "Traffic Refreshed!")
     elif data == "back_to_main":
         delete_message(chat_id, message_id)
         send_message(chat_id, "🏠 <b>Main Menu:</b>", reply_markup=get_main_keyboard(user_id))
         answer_callback_query(query_id)
     elif data == "profile_refer":
         invite_link = f"https://t.me/numiiq_bot?start={user_id}"
-        answer_callback_query(query_id, "Link Generated!")
+        answer_callback_query(query_id, "Link Ready!")
         send_message(chat_id, f"🔗 <b>Your Referral Link:</b>\n<code>{invite_link}</code>\n\nReward: 0.20 BDT per friend.")
     elif data == "profile_withdraw":
         u = get_user(user_id)
@@ -426,12 +409,12 @@ def handle_callback(callback_query):
         if bal < bot_settings["min_withdraw"]:
             answer_callback_query(query_id, f"Minimum withdraw is {bot_settings['min_withdraw']} BDT!", show_alert=True)
         else:
-            answer_callback_query(query_id, "Withdrawal menu opening...")
+            answer_callback_query(query_id, "Opening withdraw...")
     else:
         answer_callback_query(query_id)
 
 # ==========================================
-# Render Port Server
+# Render Internal Port Server
 # ==========================================
 class DummyHandler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -447,7 +430,7 @@ def run_dummy_server():
     server.serve_forever()
 
 # ==========================================
-# Main Execution
+# Main Startup
 # ==========================================
 def main():
     threading.Thread(target=run_dummy_server, daemon=True).start()
