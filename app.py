@@ -13,10 +13,10 @@ from firebase_admin import credentials, firestore
 # ==========================================
 # Configuration
 # ==========================================
-BOT_TOKEN = "YOUR_BOT_TOKEN"
-ADMIN_ID = YOUR_ADMIN_ID
+BOT_TOKEN = "8463468131:AAGf1mCjojNtewyH30KUiWucOwq0zCA92rI"
+ADMIN_ID = 8271633124
 BASE_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/"
-BOT_USERNAME = ""
+BOT_USERNAME = "@numiiq_bot"
 
 # 2oo9 API Configuration
 API_2OO9_BASE = "https://api.2oo9.cloud/MXS47FLFX0U/tness/@public/api"
